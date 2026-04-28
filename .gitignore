@@ -345,3 +345,10 @@ Output/
 AccountDumps/
 *.iautamor
 no773fix.txt
+
+# Python tool local build/data
+python_tool/.venv/
+python_tool/build/
+python_tool/dist/
+python_tool/*.spec
+python_tool/__pycache__/

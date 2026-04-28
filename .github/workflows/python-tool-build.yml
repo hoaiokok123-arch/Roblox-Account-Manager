@@ -1,0 +1,43 @@
+name: Build Python Tool
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - "python_tool/**"
+      - ".github/workflows/python-tool-build.yml"
+  pull_request:
+    paths:
+      - "python_tool/**"
+      - ".github/workflows/python-tool-build.yml"
+
+jobs:
+  build-python:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r python_tool/requirements.txt pyinstaller
+
+      - name: Build exe
+        working-directory: python_tool
+        run: pyinstaller --noconfirm --onefile --windowed --name Roblox-Account-Manager-Python ram_py.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Roblox-Account-Manager-Python
+          path: python_tool/dist/Roblox-Account-Manager-Python.exe
