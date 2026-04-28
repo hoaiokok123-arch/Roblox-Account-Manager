@@ -332,3 +332,16 @@ __pycache__/
 *.xsd.cs
 
 # OpenCover UI anal
+
+# Roblox Account Manager local data
+AccountData.json
+AccountData.json.*
+RecentGames.json
+FavoriteGames.json
+AccountControlData.json
+RAMSettings.ini
+RAMTheme.ini
+Output/
+AccountDumps/
+*.iautamor
+no773fix.txt

@@ -42,10 +42,13 @@ namespace RBX_Alt_Manager
             if (!AccountManager.Watcher.Exists("VerifyDataModel")) AccountManager.Watcher.Set("VerifyDataModel", "true");
             if (!AccountManager.Watcher.Exists("IgnoreExistingProcesses")) AccountManager.Watcher.Set("IgnoreExistingProcesses", "true");
             if (!AccountManager.Watcher.Exists("ExpectedWindowTitle")) AccountManager.Watcher.Set("ExpectedWindowTitle", "Roblox");
+            if (!AccountManager.Watcher.Exists("AutoRejoin")) AccountManager.Watcher.Set("AutoRejoin", "false");
+            if (!AccountManager.Watcher.Exists("AutoRejoinDelay")) AccountManager.Watcher.Set("AutoRejoinDelay", "15");
 
             RobloxScannerCB.Checked = AccountManager.Watcher.Get<bool>("Enabled");
             ExitIfBetaDetectedCB.Checked = AccountManager.Watcher.Get<bool>("ExitOnBeta");
             ExitIfNoConnectionCB.Checked = AccountManager.Watcher.Get<bool>("ExitIfNoConnection");
+            AutoRejoinCB.Checked = AccountManager.Watcher.Get<bool>("AutoRejoin");
             SaveWindowPositionsCB.Checked = AccountManager.Watcher.Get<bool>("SaveWindowPositions");
             VerifyDataModelCB.Checked = AccountManager.Watcher.Get<bool>("VerifyDataModel");
             IgnoreExistingProcesses.Checked = AccountManager.Watcher.Get<bool>("IgnoreExistingProcesses");
@@ -56,6 +59,7 @@ namespace RBX_Alt_Manager
 
             RbxMemoryLTNum.Value = AccountManager.Watcher.Exists("MemoryLowValue") ? Utilities.Clamp(AccountManager.Watcher.Get<decimal>("MemoryLowValue"), RbxMemoryLTNum.Minimum, RbxMemoryLTNum.Maximum) : 200;
             TimeoutNum.Value = AccountManager.Watcher.Exists("NoConnectionTimeout") ? Utilities.Clamp(AccountManager.Watcher.Get<decimal>("NoConnectionTimeout"), TimeoutNum.Minimum, TimeoutNum.Maximum) : 60;
+            AutoRejoinDelayNum.Value = AccountManager.Watcher.Exists("AutoRejoinDelay") ? Utilities.Clamp(AccountManager.Watcher.Get<decimal>("AutoRejoinDelay"), AutoRejoinDelayNum.Minimum, AutoRejoinDelayNum.Maximum) : 15;
 
             ScanIntervalN.Value = AccountManager.Watcher.Exists("ScanInterval") ? AccountManager.Watcher.Get<int>("ScanInterval") : 6;
             ReadIntervalN.Value = AccountManager.Watcher.Exists("ReadInterval") ? AccountManager.Watcher.Get<int>("ReadInterval") : 250;
@@ -910,9 +914,25 @@ namespace RBX_Alt_Manager
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 
+        private void AutoRejoinCB_CheckedChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.AutoRejoin = AutoRejoinCB.Checked;
+
+            AccountManager.Watcher.Set("AutoRejoin", AutoRejoinCB.Checked ? "true" : "false");
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
         private void TimeoutNum_ValueChanged(object sender, EventArgs e)
         {
             AccountManager.Watcher.Set("NoConnectionTimeout", TimeoutNum.Value.ToString());
+            AccountManager.IniSettings.Save("RAMSettings.ini");
+        }
+
+        private void AutoRejoinDelayNum_ValueChanged(object sender, EventArgs e)
+        {
+            RobloxWatcher.AutoRejoinDelay = (int)AutoRejoinDelayNum.Value;
+
+            AccountManager.Watcher.Set("AutoRejoinDelay", AutoRejoinDelayNum.Value.ToString());
             AccountManager.IniSettings.Save("RAMSettings.ini");
         }
 

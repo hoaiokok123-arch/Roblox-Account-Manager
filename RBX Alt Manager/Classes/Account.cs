@@ -35,6 +35,13 @@ namespace RBX_Alt_Manager
         [JsonIgnore] public DateTime LastAppLaunch;
         [JsonIgnore] public string CSRFToken;
         [JsonIgnore] public UserPresence Presence;
+        [JsonIgnore] public long LastLaunchPlaceId;
+        [JsonIgnore] public string LastLaunchJobId = "";
+        [JsonIgnore] public bool LastLaunchFollowUser;
+        [JsonIgnore] public bool LastLaunchJoinVIP;
+        [JsonIgnore] public DateTime LastLaunchTime;
+        [JsonIgnore] public DateTime LastAutoRejoinAttempt;
+        [JsonIgnore] public bool AutoRejoinPending;
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
@@ -108,6 +115,17 @@ namespace RBX_Alt_Manager
         }
 
         public RestRequest MakeRequest(string url, Method method = Method.Get) => new RestRequest(url, method).AddCookie(".ROBLOSECURITY", SecurityToken, "/", ".roblox.com");
+
+        public bool HasLastLaunchTarget => LastLaunchPlaceId > 0;
+
+        public void RememberLaunch(long PlaceID, string JobID, bool FollowUser, bool JoinVIP)
+        {
+            LastLaunchPlaceId = PlaceID;
+            LastLaunchJobId = JobID ?? string.Empty;
+            LastLaunchFollowUser = FollowUser;
+            LastLaunchJoinVIP = JoinVIP;
+            LastLaunchTime = DateTime.Now;
+        }
 
         public bool GetAuthTicket(out string Ticket)
         {
@@ -511,6 +529,8 @@ namespace RBX_Alt_Manager
                 BrowserTrackerID = r.Next(100000, 175000).ToString() + r.Next(100000, 900000).ToString(); // oh god this is ugly
             }
 
+            RememberLaunch(PlaceID, JobID, FollowUser, JoinVIP);
+
             try { ClientSettingsPatcher.PatchSettings(); } catch (Exception Ex) { Program.Logger.Error($"Failed to patch ClientAppSettings: {Ex}"); }
 
             if (!GetCSRFToken(out string Token)) return $"ERROR: Account Session Expired, re-add the account or try again. (Invalid X-CSRF-Token)\n{Token}";
@@ -522,6 +542,8 @@ namespace RBX_Alt_Manager
             {
                 if (AccountManager.General.Get<bool>("AutoCloseLastProcess"))
                 {
+                    RobloxWatcher.SuppressAutoRejoin(BrowserTrackerID, TimeSpan.FromSeconds(45));
+
                     try
                     {
                         foreach(Process proc in Process.GetProcessesByName("RobloxPlayerBeta"))

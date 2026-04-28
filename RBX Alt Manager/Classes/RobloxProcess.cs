@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -23,6 +24,10 @@ namespace RBX_Alt_Manager.Classes
         private DateTime DisconnectedTime;
         private string LastLine;
         private System.Timers.Timer WaitForExitTimer;
+        private readonly string BrowserTrackerID;
+        private readonly Account LinkedAccount;
+        private bool AutoRejoinQueued;
+        private string ExitReason;
 
         const string TimestampRegex = @"[\d+\-]+T[\d+:]+\.\w+Z,[\d.+]+,\w+,\d+[\s+]?";
 
@@ -63,11 +68,15 @@ namespace RBX_Alt_Manager.Classes
             }
         }
 
-        public RobloxProcess(Process process)
+        public RobloxProcess(Process process, string commandLine = null)
         {
             Program.Logger.Info($"New RobloxProcess created for {process.Id}");
 
             RbxProcess = process;
+
+            Match TrackerMatch = Regex.Match(commandLine ?? string.Empty, @"\-b (\d+)");
+            BrowserTrackerID = TrackerMatch.Success ? TrackerMatch.Groups[1].Value : string.Empty;
+            LinkedAccount = !string.IsNullOrEmpty(BrowserTrackerID) ? AccountManager.AccountsList?.FirstOrDefault(account => account.BrowserTrackerID == BrowserTrackerID) : null;
 
             RobloxWatcher.LogFileRead += ReadLogFile;
 
@@ -78,15 +87,22 @@ namespace RBX_Alt_Manager.Classes
             WaitForExitTimer = new System.Timers.Timer(500);
             WaitForExitTimer.Elapsed += (s, e) =>
             {
-                if (AccountManager.Watcher.Get<bool>(" ExitIfNoConnection") && AccountManager.Watcher.Get<double>("NoConnectionTimeout") is double Timeout && Timeout > 0 && !IsConnected && (DateTime.Now - DisconnectedTime).TotalSeconds is double Seconds && Seconds > Timeout)
+                bool ExitIfNoConnection = AccountManager.Watcher.Get<bool>("ExitIfNoConnection") || AccountManager.Watcher.Get<bool>(" ExitIfNoConnection");
+
+                if (ExitIfNoConnection && AccountManager.Watcher.Get<double>("NoConnectionTimeout") is double Timeout && Timeout > 0 && !IsConnected && (DateTime.Now - DisconnectedTime).TotalSeconds is double Seconds && Seconds > Timeout)
                     KillProcess($"Lost connection for more than {Seconds} second(s)");
 
                 try
                 {
-                    if (!RbxProcess.HasExited && !Program.Closed)
+                    bool HasExited = RbxProcess.HasExited;
+
+                    if (!HasExited && !Program.Closed)
                         return;
 
-                    Program.Logger.Info($"{RbxProcess.Id} has exited");
+                    Program.Logger.Info($"{RbxProcess.Id} has {(HasExited ? "exited" : "stopped being watched")}");
+
+                    if (HasExited)
+                        QueueAutoRejoin(ExitReason ?? "Roblox process exited");
 
                     RobloxWatcher.LogFileRead -= ReadLogFile;
 
@@ -99,6 +115,22 @@ namespace RBX_Alt_Manager.Classes
                 catch (Exception x) { Program.Logger.Error($"WaitForExit Error: {x}"); }
             };
             WaitForExitTimer.Start();
+        }
+
+        private void QueueAutoRejoin(string reason)
+        {
+            if (AutoRejoinQueued || Program.Closed || !RobloxWatcher.AutoRejoin)
+                return;
+
+            AutoRejoinQueued = true;
+
+            if (LinkedAccount == null)
+            {
+                Program.Logger.Info($"Auto rejoin skipped for process {RbxProcess.Id}; no account matched BrowserTrackerID {BrowserTrackerID}");
+                return;
+            }
+
+            RobloxWatcher.QueueAutoRejoin(LinkedAccount, BrowserTrackerID, reason);
         }
 
         private void ReadLogFile(object s, EventArgs e)
@@ -211,9 +243,10 @@ namespace RBX_Alt_Manager.Classes
             if (!(RobloxWatcher.IgnoreExistingProcesses || (!RobloxWatcher.IgnoreExistingProcesses && LastPosition > 0))) return false;
 
             Program.Logger.Info($"Attempting to kill process {RbxProcess.Id}, reason: {Reason}");
+            ExitReason = Reason;
             StreamDisposed = true;
 
-            LogStream.Dispose();
+            LogStream?.Dispose();
             RbxProcess.Kill();
 
             return true;

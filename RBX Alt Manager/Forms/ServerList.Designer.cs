@@ -112,6 +112,9 @@ namespace RBX_Alt_Manager
             this.ExitIfNoConnectionCB = new System.Windows.Forms.CheckBox();
             this.TimeoutNum = new System.Windows.Forms.NumericUpDown();
             this.ConnectionSecondsLabel = new System.Windows.Forms.Label();
+            this.AutoRejoinCB = new System.Windows.Forms.CheckBox();
+            this.AutoRejoinDelayNum = new System.Windows.Forms.NumericUpDown();
+            this.AutoRejoinSecondsLabel = new System.Windows.Forms.Label();
             this.IgnoreExistingProcesses = new System.Windows.Forms.CheckBox();
             this.RbxMemoryCB = new System.Windows.Forms.CheckBox();
             this.RbxMemoryLTNum = new System.Windows.Forms.NumericUpDown();
@@ -137,6 +140,7 @@ namespace RBX_Alt_Manager
             ((System.ComponentModel.ISupportInitialize)(this.ScanIntervalN)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ReadIntervalN)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.TimeoutNum)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.AutoRejoinDelayNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RbxMemoryLTNum)).BeginInit();
             this.SuspendLayout();
             // 
@@ -840,6 +844,9 @@ namespace RBX_Alt_Manager
             this.WatcherPanel.Controls.Add(this.ExitIfNoConnectionCB);
             this.WatcherPanel.Controls.Add(this.TimeoutNum);
             this.WatcherPanel.Controls.Add(this.ConnectionSecondsLabel);
+            this.WatcherPanel.Controls.Add(this.AutoRejoinCB);
+            this.WatcherPanel.Controls.Add(this.AutoRejoinDelayNum);
+            this.WatcherPanel.Controls.Add(this.AutoRejoinSecondsLabel);
             this.WatcherPanel.Controls.Add(this.SaveWindowPositionsCB);
             this.WatcherPanel.Controls.Add(this.VerifyDataModelCB);
             this.WatcherPanel.Controls.Add(this.IgnoreExistingProcesses);
@@ -992,6 +999,52 @@ namespace RBX_Alt_Manager
             this.ConnectionSecondsLabel.TabIndex = 15;
             this.ConnectionSecondsLabel.Text = "Seconds";
             // 
+            // AutoRejoinCB
+            // 
+            this.AutoRejoinCB.AutoSize = true;
+            this.AutoRejoinCB.Location = new System.Drawing.Point(11, 135);
+            this.AutoRejoinCB.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
+            this.AutoRejoinCB.Name = "AutoRejoinCB";
+            this.AutoRejoinCB.Size = new System.Drawing.Size(190, 17);
+            this.AutoRejoinCB.TabIndex = 17;
+            this.AutoRejoinCB.Text = "Auto Rejoin after Roblox closes in";
+            this.AutoRejoinCB.UseVisualStyleBackColor = true;
+            this.AutoRejoinCB.CheckedChanged += new System.EventHandler(this.AutoRejoinCB_CheckedChanged);
+            // 
+            // AutoRejoinDelayNum
+            // 
+            this.AutoRejoinDelayNum.Location = new System.Drawing.Point(204, 135);
+            this.AutoRejoinDelayNum.Maximum = new decimal(new int[] {
+            3600,
+            0,
+            0,
+            0});
+            this.AutoRejoinDelayNum.Minimum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.AutoRejoinDelayNum.Name = "AutoRejoinDelayNum";
+            this.AutoRejoinDelayNum.Size = new System.Drawing.Size(52, 20);
+            this.AutoRejoinDelayNum.TabIndex = 18;
+            this.AutoRejoinDelayNum.Value = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.AutoRejoinDelayNum.ValueChanged += new System.EventHandler(this.AutoRejoinDelayNum_ValueChanged);
+            // 
+            // AutoRejoinSecondsLabel
+            // 
+            this.AutoRejoinSecondsLabel.AutoSize = true;
+            this.WatcherPanel.SetFlowBreak(this.AutoRejoinSecondsLabel, true);
+            this.AutoRejoinSecondsLabel.Location = new System.Drawing.Point(262, 138);
+            this.AutoRejoinSecondsLabel.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.AutoRejoinSecondsLabel.Name = "AutoRejoinSecondsLabel";
+            this.AutoRejoinSecondsLabel.Size = new System.Drawing.Size(49, 13);
+            this.AutoRejoinSecondsLabel.TabIndex = 19;
+            this.AutoRejoinSecondsLabel.Text = "Seconds";
+            // 
             // IgnoreExistingProcesses
             // 
             this.IgnoreExistingProcesses.AutoSize = true;
@@ -1129,6 +1182,7 @@ namespace RBX_Alt_Manager
             ((System.ComponentModel.ISupportInitialize)(this.ScanIntervalN)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ReadIntervalN)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.TimeoutNum)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.AutoRejoinDelayNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.RbxMemoryLTNum)).EndInit();
             this.ResumeLayout(false);
 
@@ -1221,5 +1275,8 @@ namespace RBX_Alt_Manager
         private System.Windows.Forms.Label ConnectionSecondsLabel;
         private System.Windows.Forms.Button OpenLogsButton;
         private System.Windows.Forms.CheckBox SaveWindowPositionsCB;
+        private System.Windows.Forms.CheckBox AutoRejoinCB;
+        private System.Windows.Forms.NumericUpDown AutoRejoinDelayNum;
+        private System.Windows.Forms.Label AutoRejoinSecondsLabel;
     }
 }
